@@ -1,13 +1,13 @@
 const bcrypt=require('bcryptjs')
 const jwt=require('jsonwebtoken')
 const User=require('../models/userModel')
-
+const transporter=require('../config/nodemailer')
 
 //register
 const register=async (req,res)=>{
     const{name, email, password}=req.body
     if(!name || !email || !password){
-       return res.status().json({success:false, message:"All fields are mandetory"})
+       return res.status(400).json({success:false, message:"All fields are mandetory"})
     }
 
     try{
@@ -39,6 +39,15 @@ const register=async (req,res)=>{
             maxAge:7 * 24 * 60 * 60 * 1000
           })
 
+          //after completing the registration user will an email
+          const mailOptions={
+            from:process.env.SENDER_EMAIL,
+            to:email,
+            subject:"Welcome to Gatekeeper",
+            text:`Welcome to gatekeepet. Your accocunt has been created with email ${email}`
+          }
+          await transporter.sendMail(mailOptions)//this will send an email 
+
          return res.status(201).json({success:true, message:"registered successfully"})
 
     }
@@ -52,7 +61,7 @@ const login=async(req,res)=>{
     const{email, password}=req.body
 
     if(!email || !password){
-       return res.status().json({success:false, message:"All fields are mandetory"})
+       return res.status(400).json({success:false, message:"All fields are mandetory"})
     }
 
     try{
@@ -105,4 +114,166 @@ const logout=async(req,res)=>{
     }
 }
 
-module.exports={register, login, logout}
+//send verification otp to the user
+const sendVerifyOtp=async(req,res)=>{
+    try{
+       const userId = req.user.id//changed now
+
+        
+        const user=await User.findById(userId)
+
+        if(user.isAccountVerified){ // check schema 
+            return res.status(409).json({success:false, message:"Account already verified"})
+        }
+        
+        //generate otp
+      const otp= String(Math.floor(100000 + Math.random()*900000)) //this will generate 6 digit number and by using String we are converting it in a string
+      user.verifyOtp=otp//check the schema
+      user.verifyOtpExpireAt=Date.now()+ 5 * 60 * 1000 //otp expiry logic
+      // Date.now means from todays date till 5 minutes
+
+      await user.save()// these values will be saved here
+      //verifyOtp, verifyOtpExpireAt are coming from the schema
+
+      const mailOptions={
+            from:process.env.SENDER_EMAIL,
+            to:user.email,
+            subject:"Account verification OTP",
+            text: `Your One-Time Password (OTP) for Gatekeeper is ${otp}.
+                   This OTP is valid for 5 minutes.
+                   Do not share this code with anyone.`      
+        }
+        await transporter.sendMail(mailOptions)
+        res.status(200).json({success:true, message:"Verification sent on email"})
+    }
+    catch(err){
+        res.status(400).json({success:false, message:err.message})
+    }
+}
+
+
+//to verify the email using otp
+const verifyEmail=async(req,res)=>{
+    const userId = req.user.id //both are changed to debug
+    const { otp } = req.body
+
+
+     if(!userId || !otp){
+         return res.status(401).json({success:false, message:"Missing details here"})
+     }
+
+    try{
+        const user=await User.findById(userId)
+        //check if the user is present or not
+        if(!user){
+            return res.status(404).json({success:false, message:"User not found"})
+        }
+
+        //verify the otp
+        if(user.verifyOtp==="" || user.verifyOtp!==otp){
+            return res.status(403).json({success:false, message:"Invalid otp"})
+        }
+
+        // //if the otp is valid then check the expiry date
+        if(user.verifyOtpExpireAt < Date.now() ){ //changed to debug
+           return res.status(400).json({success:false, message:"Otp expired"})
+        }
+
+        user.isAccountVerified=true// this is also coming from schema, initially is was false
+        
+        //reset again
+        user.verifyOtp=''
+        user.verifyOtpExpireAt=0
+        await user.save()
+
+        return res.status(200).json({success:true, message:"Email verified successfully"})
+    }
+    catch(err){
+       return res.status(401).json({success:false, message:"Missing details"})   
+    }
+}
+
+//check if the user isauthenticated or not
+const isAuthenticated=async(req,res)=>{
+    try{
+        return res.status(200).json({success:true, message:"User is authenticated"})
+    }
+    catch(err){
+        res.status(401).json({success:false, message:err.message})
+    }
+}
+
+//send password reset otp
+
+const sendResetOtp=async(req,res)=>{
+    const{email}=req.body
+    if(!email){
+        return res.status(404).json({success:false, message:"Email is required"})
+    }
+
+    try{
+        const user=await User.findOne({email})
+        if(!user){
+            return res.status(404).json({success:false, message:"User not found"})
+        }
+
+        //otp generation
+        const otp= String(Math.floor(100000 + Math.random()*900000))
+        user.resetOtp=otp
+        user.resetOtpExpireAt=Date.now()+ 5 * 60 * 1000
+        await user.save()
+
+      const mailOptions={
+            from:process.env.SENDER_EMAIL,
+            to:user.email,
+            subject:"Password reset OTP",
+            text: `We received a request to reset your Gatekeeper account password. 
+                   Your Password Reset OTP is: ${otp}
+                    This code is valid for 5 minutes.
+                     Do not share this code with anyone.
+
+            If you did not request this, please ignore this email.`
+        }
+        await transporter.sendMail(mailOptions)
+        res.status(200).json({success:true, message:"reset otp sent on email"})
+    }
+    catch(err){
+        return res.status(401).json({success:false, message:err.message})
+    }
+}
+
+//verify otp and reset the password
+
+const resetPassword=async(req,res)=>{
+    const{email, otp,newPassword}=req.body
+    if(!email || !otp || !newPassword){
+        return res.status(400).json({success:false, message:"All fields are mandetory"})
+    }
+    try{
+        const user=await User.findOne({email})
+        if(!user){
+            return res.status(404).json({success:false, message:"User not found"})
+        }
+
+        if(user.resetOtp==="" || user.resetOtp!==otp){
+            return res.status(400).json({success:false, message:"Invalid OTP"})
+        }
+        if(user.resetOtpExpireAt<Date.now()){
+            return res.status(400).json({success:false, message:"OTP expired"})
+        }
+
+        //encrypt the new password
+        const hashedPassword=await bcrypt.hash(newPassword, 10)
+        user.password=hashedPassword
+        user.resetOtp="" //** reset otp
+        user.resetOtpExpireAt=0
+        await user.save()//**save new details 
+
+        return res.status(201).json({success:true, message:"Password has been reset successfully"})
+    }
+    catch(err){
+        return res.status(401).json({success:true, message:err.message})
+    }
+}
+
+module.exports={register, login, logout, sendVerifyOtp, verifyEmail, isAuthenticated, sendResetOtp, resetPassword}
