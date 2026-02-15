@@ -13,7 +13,11 @@ const PORT=process.env.PORT
 const allowedOrigin=process.env.VITE_URI
 app.use(express.json())
 app.use(cookieParser())
-app.use(cors({origin:allowedOrigin, credentials:true}))
+app.use(cors({
+    origin:allowedOrigin, 
+    credentials:true, 
+    methods:['GET', 'POST', 'PUT', 'DELETE', "OPTIONS"],
+}))
 
 
 app.get('/', (req,res)=>{
