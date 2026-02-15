@@ -94,10 +94,13 @@ const login=async(req,res)=>{
           )
           res.cookie('token', token, {
             httpOnly:true,
-            secure: process.env.NODE_ENV==='production', //if env is production then it will work on https
+            //*todo code changed here and in logout also
+            // secure: process.env.NODE_ENV==='production', //if env is production then it will work on https
                             //if its on development then it will br on http
                             //check env
-            sameSite:process.env.NODE_ENV==='production' ? 'none' : 'strict',
+            // sameSite:process.env.NODE_ENV==='production' ? 'none' : 'strict',
+            secure:true,
+            sameSite:'none',
             maxAge:7 * 24 * 60 * 60 * 1000
           })
 
@@ -113,8 +116,11 @@ const logout=async(req,res)=>{
     try{
         res.clearCookie('token', {
             httpOnly:true,
-            secure: process.env.NODE_ENV==='production',
-            sameSite:process.env.NODE_ENV==='production' ? 'node' : 'strict',
+            //*todo code changed here & in login cookies also
+            // secure: process.env.NODE_ENV==='production',
+            // sameSite:process.env.NODE_ENV==='production' ? 'node' : 'strict',
+            secure:true,
+            sameSite:'none'
         })
 
         return res.status(200).json({success:true, message:"Loggout successfully"})
