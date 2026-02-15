@@ -1,7 +1,9 @@
 const bcrypt=require('bcryptjs')
 const jwt=require('jsonwebtoken')
+const path=require('path')
 const User=require('../models/userModel')
 const transporter=require('../config/nodemailer')
+const {EMAIL_VERIFY_TEMPLATE, PASSWORD_RESET_TEMPLATE, WELCOME_EMAIL_TEMPLATE}=require('../config/emailTemplates')
 
 //register
 const register=async (req,res)=>{
@@ -44,12 +46,20 @@ const register=async (req,res)=>{
             from:process.env.SENDER_EMAIL,
             to:email,
             subject:"Welcome to Gatekeeper",
-            text:`Welcome to gatekeepet. Your accocunt has been created with email ${email}`
+            // text:`Welcome to gatekeepet. Your accocunt has been created with email ${email}` //*todo anothr template should come here
+            html: WELCOME_EMAIL_TEMPLATE.replace("{{email}}", email),
+
+            attachments:[
+                {
+                    filename:'Gatekeeper-logo-cropped.png',
+                    path:path.join(__dirname, '../public/Gatekeeper-logo-cropped.png'),
+                    cid:'logo123'
+                }
+            ]
           }
           await transporter.sendMail(mailOptions)//this will send an email 
 
          return res.status(201).json({success:true, message:"registered successfully"})
-
     }
     catch(err){
         res.status(500).json({success:false, message:err.message})
@@ -139,9 +149,18 @@ const sendVerifyOtp=async(req,res)=>{
             from:process.env.SENDER_EMAIL,
             to:user.email,
             subject:"Account verification OTP",
-            text: `Your One-Time Password (OTP) for Gatekeeper is ${otp}.
-                   This OTP is valid for 5 minutes.
-                   Do not share this code with anyone.`      
+            // html:EMAIL_VERIFY_TEMPLATE.replace("{{otp}}", otp) .replace("{{email}}", user.email)  //*todo replace it by another template    
+            html: EMAIL_VERIFY_TEMPLATE
+                 .replace("{{otp}}", otp)
+                 .replace("{{email}}", user.email),
+            attachments:
+            [
+                {
+                    filename:'Gatekeeper-logo-cropped.png',
+                    path:path.join(__dirname, '../public/Gatekeeper-logo-cropped.png'),
+                    cid:'logo123'
+                }
+            ]
         }
         await transporter.sendMail(mailOptions)
         res.status(200).json({success:true, message:"Verification sent on email"})
@@ -227,12 +246,19 @@ const sendResetOtp=async(req,res)=>{
             from:process.env.SENDER_EMAIL,
             to:user.email,
             subject:"Password reset OTP",
-            text: `We received a request to reset your Gatekeeper account password. 
-                   Your Password Reset OTP is: ${otp}
-                    This code is valid for 5 minutes.
-                     Do not share this code with anyone.
+            // html:PASSWORD_RESET_TEMPLATE.replace("{{otp}}", otp).replace("{{email}}", user.email) //*todo replaced by another html template
+            html: PASSWORD_RESET_TEMPLATE
+                  .replace("{{otp}}", otp)
+                  .replace("{{email}}", user.email),
+            attachments:
+            [
+                {
+                    filename:'Gatekeeper-logo-cropped.png',
+                    path:path.join(__dirname, '../public/Gatekeeper-logo-cropped.png'),
+                    cid:'logo123'
+                }
+            ]
 
-            If you did not request this, please ignore this email.`
         }
         await transporter.sendMail(mailOptions)
         res.status(200).json({success:true, message:"reset otp sent on email"})
