@@ -8,6 +8,7 @@ const {EMAIL_VERIFY_TEMPLATE, PASSWORD_RESET_TEMPLATE, WELCOME_EMAIL_TEMPLATE}=r
 //register
 const register=async (req,res)=>{
     const{name, email, password}=req.body
+    
     if(!name || !email || !password){
        return res.status(400).json({success:false, message:"All fields are mandetory"})
     }
@@ -57,8 +58,8 @@ const register=async (req,res)=>{
                 }
             ]
           }
-          await transporter.sendMail(mailOptions)//this will send an email 
-
+       await transporter.sendMail(mailOptions)//this will send an email 
+               
          return res.status(201).json({success:true, message:"registered successfully"})
     }
     catch(err){
