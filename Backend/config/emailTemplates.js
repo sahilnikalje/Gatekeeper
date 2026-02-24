@@ -74,9 +74,7 @@ body{
   <p>Use the OTP below to verify your account:</p>
 
   <div class="otp">{{otp}}</div>
-
   <p>This OTP is valid for 5 minutes. Do not share it with anyone.</p>
-
   <div class="footer">
     © 2026 Gatekeeper · Secure Authentication System
   </div>
