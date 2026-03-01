@@ -19,7 +19,7 @@ app.use(cookieParser())
 
 //! changed fror deployement
 app.use(cors({
-  origin: process.env.VITE_URI,
+  origin: process.env.FRONTEND_URI,
   credentials: true,
 }))
 
