@@ -33,15 +33,23 @@ const register=async (req,res)=>{
             process.env.JWT_SECRET,
             {expiresIn:'7d'}
           )
-          res.cookie('token', token, {
-            httpOnly:true,
-            secure: process.env.NODE_ENV==='production', //if env is production then it will work on https
-                            //if its on development then it will br on http
-                            //check env
-            sameSite:process.env.NODE_ENV==='production' ? 'none' : 'strict',
-            maxAge:7 * 24 * 60 * 60 * 1000
-          })
-
+        //   res.cookie('token', token, {
+        //     httpOnly:true,
+        //     secure: process.env.NODE_ENV==='production', //if env is production then it will work on https
+        //                     //if its on development then it will br on http
+        //                     //check env
+        //     sameSite:process.env.NODE_ENV==='production' ? 'none' : 'strict',
+        //     maxAge:7 * 24 * 60 * 60 * 1000
+        //   })
+               
+              //! changed for deployement
+                res.cookie('token', token, {
+                 httpOnly: true,
+                 secure: true,
+                 sameSite: 'none',
+                 maxAge: 7 * 24 * 60 * 60 * 1000
+               })
+               
           //after completing the registration user will an email
           const mailOptions={
             from:process.env.SENDER_EMAIL,
