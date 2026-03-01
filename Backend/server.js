@@ -21,13 +21,8 @@ app.use(cookieParser())
 app.use(cors({
   origin: process.env.VITE_URI,
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
 }))
-app.options("*", cors({
-  origin: process.env.VITE_URI,
-  credentials: true,
-}))
+
 
 app.get('/', (req,res)=>{
     res.send("Hello there")
