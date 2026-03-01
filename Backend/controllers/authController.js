@@ -66,9 +66,18 @@ const register=async (req,res)=>{
                 }
             ]
           }
-       await transporter.sendMail(mailOptions)//this will send an email 
+    //    await transporter.sendMail(mailOptions)//this will send an email 
                
-         return res.status(201).json({success:true, message:"registered successfully"})
+    //      return res.status(201).json({success:true, message:"registered successfully"})
+    //! changed for deployement
+    res.status(201).json({success:true, message:"Registered successfully"})
+           transporter.sendMail(mailOptions)
+           .then(info => {
+               console.log("Email sent:", info.response)
+           })
+           .catch(err => {
+               console.error("EMAIL FULL ERROR:", err)
+           })
     }
     catch(err){
         res.status(500).json({success:false, message:err.message})
