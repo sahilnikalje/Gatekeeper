@@ -12,12 +12,20 @@ const PORT=process.env.PORT
 
 app.use(express.json())
 app.use(cookieParser())
+// app.use(cors({
+//      origin:process.env.VITE_BACKEND_URL,
+//      credentials:true
+//     }))
+
+//! changed fror deployement
 app.use(cors({
-     origin:process.env.VITE_BACKEND_URL,
-     credentials:true
-    }))
-
-
+  origin: [
+     process.env.VITE_URI
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}))
 app.get('/', (req,res)=>{
     res.send("Hello there")
 })
