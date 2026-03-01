@@ -7,7 +7,7 @@ const authRouter=require('./routes/authRoutes')
 const userRouter=require('./routes/userRoutes')
 
 const app=express()
-
+app.set("trust proxy", 1)
 const PORT=process.env.PORT
 
 app.use(express.json())
@@ -19,13 +19,16 @@ app.use(cookieParser())
 
 //! changed fror deployement
 app.use(cors({
-  origin: [
-     process.env.VITE_URI
-  ],
+  origin: process.env.VITE_URI,
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 }))
+app.options("*", cors({
+  origin: process.env.VITE_URI,
+  credentials: true,
+}))
+
 app.get('/', (req,res)=>{
     res.send("Hello there")
 })
