@@ -24,7 +24,7 @@ app.use(cors({
 }))
 
 
-app.get('/', (req,res)=>{
+app.get('/ping', (req,res)=>{
     res.send("Hello there")
 })
 app.use('/api/auth', authRouter)
