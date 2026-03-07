@@ -1,13 +1,25 @@
-const nodemailer=require('nodemailer')
+const axios = require('axios')
 
-const transporter=nodemailer.createTransport({
-    host:"smtp-relay.brevo.com",
-    port:465,
-    secure:true,
-    auth:{
-        user:process.env.SMTP_USER,
-        pass:process.env.SMTP_PASSWORD,
-    }
-})
+const sendEmail = async ({ to, subject, html }) => {
+    const response = await axios.post(
+        'https://api.brevo.com/v3/smtp/email',
+        {
+            sender: { 
+                email: process.env.SENDER_EMAIL, 
+                name: "Gatekeeper" 
+            },
+            to: [{ email: to }],
+            subject,
+            htmlContent: html,
+        },
+        {
+            headers: {
+                'api-key': process.env.BREVO_API_KEY,
+                'Content-Type': 'application/json',
+            }
+        }
+    )
+    return response.data
+}
 
-module.exports=transporter
+module.exports = { sendEmail }
