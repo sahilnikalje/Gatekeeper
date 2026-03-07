@@ -41,7 +41,7 @@ function Login() {
             navigate('/')
           }
           else{
-            toast.error(data.messag)
+            toast.error(data.message)
           }
         }
     }

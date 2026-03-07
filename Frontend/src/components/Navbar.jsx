@@ -6,13 +6,14 @@ import { toast } from 'react-toastify'
 import axios from 'axios'
 
 const Navbar = () => {
+    axios.defaults.withCredentials=true
     const navigate=useNavigate()
     const{userData, backendUrl, setUserData, setIsLoggedin}=useContext(AppContext)
 
     //*! otp verification function
     const sendVerificationOtp=async ()=>{
       try{
-        axios.defaults.withCredentials=true
+        // axios.defaults.withCredentials=true
 
         const {data}=await axios.post(`${backendUrl}/api/auth/send-verify-otp`)
         if(data.success){

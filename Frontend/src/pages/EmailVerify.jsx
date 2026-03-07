@@ -5,6 +5,7 @@ import { useRef } from 'react'
 import { toast } from 'react-toastify'
 import axios from 'axios'
 import { useEffect } from 'react'
+import { AppContext } from '../context/AppContext'
 
 function EmailVerify() {
   const navigate=useNavigate()
@@ -95,6 +96,5 @@ function EmailVerify() {
     </div>
   )
 }
-import { AppContext } from '../context/AppContext'
 
 export default EmailVerify
