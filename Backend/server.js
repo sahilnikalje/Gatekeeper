@@ -8,13 +8,6 @@ const userRouter=require('./routes/userRoutes')
 
 const app=express()
 
-const transporter = require('./config/nodemailer')
-
-transporter.verify((error, success) => {
-    if (error) console.log("EMAIL TRANSPORTER ERROR:", error)
-    else console.log("Email transporter ready")
-})
-
 app.set("trust proxy", 1)
 const PORT=process.env.PORT
 
