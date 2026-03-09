@@ -6,10 +6,61 @@ import { AppContext } from '../context/AppContext'
 import { toast } from 'react-toastify'
 import axios from 'axios'
 
+const GK = {
+  bg: 'radial-gradient(ellipse at 30% 0%, #0a1f12 0%, #070c0f 50%, #060b14 100%)',
+  orbGreen: 'radial-gradient(circle, rgba(34,197,94,0.12) 0%, transparent 70%)',
+  orbBlue:  'radial-gradient(circle, rgba(14,165,233,0.10) 0%, transparent 70%)',
+  card: {
+    background: 'rgba(10, 16, 13, 0.88)',
+    border: '1px solid rgba(34,197,94,0.15)',
+    boxShadow: '0 8px 64px rgba(14,165,233,0.10), 0 1.5px 0 rgba(255,255,255,0.03) inset',
+    backdropFilter: 'blur(20px)',
+  },
+  badge: {
+    display: 'inline-block',
+    background: 'linear-gradient(135deg, rgba(34,197,94,0.12), rgba(14,165,233,0.10))',
+    border: '1px solid rgba(34,197,94,0.25)',
+    borderRadius: '6px',
+    padding: '3px 11px',
+    fontSize: '10px',
+    letterSpacing: '0.14em',
+    color: '#4ade80',
+    textTransform: 'uppercase',
+    marginBottom: '14px',
+    fontFamily: 'Syne, sans-serif',
+    fontWeight: '700',
+  },
+  input: {
+    background: 'rgba(255,255,255,0.04)',
+    border: '1px solid rgba(255,255,255,0.07)',
+  },
+  btn: {
+    background: 'linear-gradient(135deg, #16a34a, #0ea5e9)',
+    boxShadow: '0 4px 24px rgba(14,165,233,0.25)',
+    fontFamily: 'Syne, sans-serif',
+    letterSpacing: '0.05em',
+    fontWeight: '700',
+    fontSize: '14px',
+    cursor: 'pointer',
+  },
+  otpInput: {
+    background: 'rgba(255,255,255,0.05)',
+    border: '1px solid rgba(34,197,94,0.2)',
+    color: '#e2e8f0',
+    fontFamily: 'Syne, sans-serif',
+    fontWeight: '700',
+    fontSize: '20px',
+    borderRadius: '10px',
+    width: '44px',
+    height: '52px',
+    textAlign: 'center',
+    outline: 'none',
+  },
+}
+
 function ResetPassword() {
 
   const{backendUrl}=useContext(AppContext)
-
   axios.defaults.withCredentials=true
 
   const navigate=useNavigate()
@@ -35,15 +86,14 @@ function ResetPassword() {
        }
     }
   
-       //*! function for copy paste otp
+    //*! function for copy paste otp
     const handlePaste=(e)=>{ 
       e.preventDefault()
       const paste=e.clipboardData.getData('text')
-      const pasteArray=paste.split('')//**this will paste the data by splitting it*/
-      pasteArray.forEach((char, index)=>{//**this will paste the data by splitting it*/
+      const pasteArray=paste.split('')
+      pasteArray.forEach((char, index)=>{
         if(inputRefs.current[index]){
-          inputRefs.current[index].value=char //** logic to paste the otp at once */
-           //*! also one onPaste event will be used in div inside which we have created inputs
+          inputRefs.current[index].value=char
         }
       })
     }
@@ -53,7 +103,6 @@ function ResetPassword() {
       try{
         const{data}=await axios.post(`${backendUrl}/api/auth/send-reset-otp`, {email})
         data.success ? toast.success(data.message) : toast.error(data.message)
-
         data.success && setIsEmailSent(true)
       }
       catch(err){
@@ -80,90 +129,104 @@ function ResetPassword() {
       }
     }
 
+  const PageShell = ({ children }) => (
+    <div className='flex items-center justify-center min-h-screen'
+      style={{ background: GK.bg, position: 'relative', overflow: 'hidden' }}>
+      <div style={{
+        position: 'absolute', top: '-100px', right: '-60px',
+        width: '380px', height: '380px', borderRadius: '50%',
+        background: GK.orbGreen, pointerEvents: 'none'
+      }}/>
+      <div style={{
+        position: 'absolute', bottom: '-80px', left: '-80px',
+        width: '300px', height: '300px', borderRadius: '50%',
+        background: GK.orbBlue, pointerEvents: 'none'
+      }}/>
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none', opacity: 0.025,
+        backgroundImage: 'linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)',
+        backgroundSize: '40px 40px',
+      }}/>
+      <img onClick={()=>navigate('/')}
+        src={assets.Gatekeeper_logo} alt=''
+        className='absolute left-5 sm:left-20 top-5 w-28 sm:w-48 cursor-pointer'/>
+      {children}
+    </div>
+  )
 
   return (
-    <div className='flex items-center justify-center min-h-screen  bg-gradient-to-br from-blue-200 to-purple-400'>
-      <img onClick={()=>navigate('/')}
-        src={assets.Gatekeeper_logo} alt='' className='absolute left-5 sm:left-20 top-5 w-28 sm:w-48 cursor-pointer'/>   
+    <>
+      {/*//! form to add the email*/}
+      {!isEmailSent &&
+        <PageShell>
+          <form onSubmit={onSubmitEmail} style={GK.card} className='p-10 rounded-2xl w-96 text-sm'>
+            <div style={GK.badge}>Account Recovery</div>
+            <h1 style={{ fontFamily: 'Syne, sans-serif', letterSpacing: '-0.02em' }}
+              className='text-white text-2xl font-bold mb-2'>Reset Password</h1>
+            <p className='mb-8 text-sm text-slate-500'>Enter your registered email address</p>
 
-         {/*//! form to add the email*/}
-        
-       {!isEmailSent && 
-          <form onSubmit={onSubmitEmail}
-          className='bg-slate-900 p-8 rounded-lg shadow-lg w-96 text-sm'>
-            <h1 className='text-white text-2xl font-semibold text-center mb-4'>Reset Password</h1>
-           <p className='text-center mb-6 text-indigo-300'>Enter your registered email address</p>
-
-           <div className='mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-[#333A5C]'>
-               <img className='w-3 h-3'
-               src={assets.mail_icon}/>
-
-               <input
-               type='email'
-                className='bg-transparent outline-none text-white placeholder-white w-full'
+            <div style={GK.input} className='mb-4 flex items-center gap-3 w-full px-5 py-3 rounded-xl'>
+              <img className='w-3.5 h-3.5' style={{ opacity: 0.45 }} src={assets.mail_icon}/>
+              <input type='email'
+                style={{ background: 'transparent', color: '#e2e8f0' }}
+                className='outline-none placeholder-slate-600 w-full text-sm'
                 onChange={(e)=>setEmail(e.target.value)}
-                placeholder='Enter email'
-                value={email}
-                required
-               />
-           </div>
-           <button className='w-full py-2.5 bg-gradient-to-r from-indigo-500 to-indigo-900 text-white rounded-full mt-3'>Submit</button>
-          </form>   
-        }
+                placeholder='Email address' value={email} required
+              />
+            </div>
+            <button style={GK.btn} className='w-full py-3 text-white rounded-xl mt-2'>Submit</button>
+          </form>
+        </PageShell>
+      }
 
-        {/* //! form to add the otp */}
-        {/*//todo this will be only visible when the user has entered the email and has received the otp*/}
+      {/* //! form to add the otp */}
+      {!isOtpSubmitted && isEmailSent &&
+        <PageShell>
+          <form onSubmit={onSubmitOtp} style={GK.card} className='p-10 rounded-2xl w-96 text-sm'>
+            <div style={GK.badge}>Verification</div>
+            <h1 style={{ fontFamily: 'Syne, sans-serif', letterSpacing: '-0.02em' }}
+              className='text-white text-2xl font-bold mb-2'>Check your email</h1>
+            <p className='mb-8 text-sm text-slate-500'>Enter the 6-digit code sent to your email id</p>
 
-        {!isOtpSubmitted && isEmailSent &&
-          <form onSubmit={onSubmitOtp}
-           className='bg-slate-900 p-8 rounded-lg shadow-lg w-96 text-sm'>
-           <h1 className='text-white text-2xl font-semibold text-center mb-4'>Reset password </h1>
-           <p className='text-center mb-6 text-indigo-300'>Enter the 6-digit code sent to your email id</p>
-
-           <div onPaste={handlePaste}
-               className='flex justify-between mb-8'> {/*//*! this is the div which has input tags*/}
-               {Array(6).fill(0).map((_, index)=>(  //** this will create 6 input fields */
-                  <input 
-                  className='w-12 h-12 bg-[#333A5C] text-white text-center text-xl rounded-md'
+            <div onPaste={handlePaste} className='flex justify-between mb-8'>
+              {Array(6).fill(0).map((_, index)=>(
+                <input
+                  style={GK.otpInput}
                   ref={(e)=>inputRefs.current[index]=e}
                   onInput={(e)=>handleInput(e, index)}
                   onKeyDown={(e)=>handleKeyDown(e, index)}
-                  type='text'
-                  maxLength='1'
-                  key={index}
-                  required
-                 />
-               ))}
-           </div>
-           <button  className='w-full py-2.5 bg-gradient-to-r from-indigo-500 to-indigo-900 text-white rounded-full'>Submit</button>
+                  type='text' maxLength='1' key={index} required
+                />
+              ))}
+            </div>
+            <button style={GK.btn} className='w-full py-3 text-white rounded-xl'>Submit</button>
           </form>
-        }
+        </PageShell>
+      }
 
-        {/*//! new password form*/}
-        {/*//! this will be visible only when the user has submitted the otp*/}
-           {isOtpSubmitted && isEmailSent &&
-              <form onSubmit={onSubmitNewPassword}
-              className='bg-slate-900 p-8 rounded-lg shadow-lg w-96 text-sm'>
-            <h1 className='text-white text-2xl font-semibold text-center mb-4'>New Password</h1>
-           <p className='text-center mb-6 text-indigo-300'>Enter the new password below</p>
+      {/*//! new password form*/}
+      {isOtpSubmitted && isEmailSent &&
+        <PageShell>
+          <form onSubmit={onSubmitNewPassword} style={GK.card} className='p-10 rounded-2xl w-96 text-sm'>
+            <div style={GK.badge}>New Password</div>
+            <h1 style={{ fontFamily: 'Syne, sans-serif', letterSpacing: '-0.02em' }}
+              className='text-white text-2xl font-bold mb-2'>Set New Password</h1>
+            <p className='mb-8 text-sm text-slate-500'>Enter the new password below</p>
 
-           <div className='mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-[#333A5C]'>
-               <img className='w-3 h-3'
-               src={assets.lock_icon}/>
-
-               <input
-                type='password'
-                className='bg-transparent outline-none text-white placeholder-white w-full'
+            <div style={GK.input} className='mb-4 flex items-center gap-3 w-full px-5 py-3 rounded-xl'>
+              <img className='w-3.5 h-3.5' style={{ opacity: 0.45 }} src={assets.lock_icon}/>
+              <input type='password'
+                style={{ background: 'transparent', color: '#e2e8f0' }}
+                className='outline-none placeholder-slate-600 w-full text-sm'
                 onChange={(e)=>setNewPassword(e.target.value)}
-                placeholder='Enter new password'
-                value={newPassword}
-                required
-               />
-           </div>
-           <button className='w-full py-2.5 bg-gradient-to-r from-indigo-500 to-indigo-900 text-white rounded-full mt-3'>Submit</button>
-              </form>   
-           }
-    </div>
+                placeholder='New password' value={newPassword} required
+              />
+            </div>
+            <button style={GK.btn} className='w-full py-3 text-white rounded-xl mt-2'>Submit</button>
+          </form>
+        </PageShell>
+      }
+    </>
   )
 }
 
